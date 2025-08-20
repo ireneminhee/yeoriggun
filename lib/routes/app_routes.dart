@@ -4,7 +4,7 @@ import '../ui/screens/login_screen.dart';
 import '../ui/screens/cart_screen.dart';
 
 class AppRoutes {
-  static const String initial = '/home';
+  static const String initial = '/login';
   static const String home = '/home';
   static const String cart = '/cart';
 
