@@ -11,6 +11,16 @@ class StoreCard extends StatelessWidget {
   final VoidCallback? onFavoritePressed;
   final bool isFavorite;
 
+  /// 가게명 텍스트 스타일 커스텀(예: Public Sans 17 w700 -0.34)
+  final TextStyle? titleStyle;
+
+  /// 가게명 최대 표시 폭(즐겨찾기 아이콘과 겹침 방지)
+  final double? titleMaxWidth;
+
+  /// (선택) 카드 크기 고정이 필요할 때 지정. 기본은 null(내용에 맞게)
+  final double? cardWidth;
+  final double? cardHeight;
+
   const StoreCard({
     super.key,
     required this.storeName,
@@ -22,22 +32,29 @@ class StoreCard extends StatelessWidget {
     this.onTap,
     this.onFavoritePressed,
     this.isFavorite = false,
+    this.titleStyle,
+    this.titleMaxWidth,
+    this.cardWidth,
+    this.cardHeight,
   });
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
+    // 기본 타이틀 스타일(요청한 스펙)
+    final defaultTitleStyle = const TextStyle(
+      color: Color(0xFF271C1A),
+      fontSize: 17,
+      fontFamily: 'Public Sans', // pubspec에 등록되어 있어야 실제 폰트 적용됨
+      fontWeight: FontWeight.w700,
+      letterSpacing: -0.34,
+    );
 
-    return Card(
+    // 카드 콘텐츠
+    final cardChild = Card(
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: BorderSide(
-          color: Colors.grey.withOpacity(0.25),
-          width: 1,
-        ),
+        side: BorderSide(color: Colors.grey.withOpacity(0.25), width: 1),
       ),
       child: InkWell(
         onTap: onTap,
@@ -45,27 +62,29 @@ class StoreCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Store name and favorite button
+            // 상단: 가게명 + 즐겨찾기
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                    child: Text(
-                      storeName,
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF281D1B),
+                  // 가게명 (최대 폭 제한 옵션)
+                  Flexible(
+                    child: SizedBox(
+                      width: titleMaxWidth ?? double.infinity,
+                      child: Text(
+                        storeName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: titleStyle ?? defaultTitleStyle,
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   IconButton(
                     onPressed: onFavoritePressed,
                     icon: Icon(
                       isFavorite ? Icons.favorite : Icons.favorite_border,
-                      color: isFavorite ? Colors.red : Colors.grey,
+                      color: isFavorite ? const Color(0xFFC6007E) : Colors.grey,
                       size: 24,
                     ),
                     padding: EdgeInsets.zero,
@@ -74,28 +93,24 @@ class StoreCard extends StatelessWidget {
                 ],
               ),
             ),
-            
-            // Rating and details
+
+            // 중간: 별점 · 가격 · 카테고리 · 픽업시간
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 6, 16, 0),
               child: Row(
                 children: [
-                  const Icon(
-                    Icons.star,
-                    size: 12,
-                    color: Colors.orange,
-                  ),
+                  const Icon(Icons.star, size: 12, color: Colors.orange),
                   const SizedBox(width: 2),
                   Text(
-                    rating.toString(),
-                    style: textTheme.bodySmall?.copyWith(
+                    rating.toStringAsFixed(1),
+                    style: TextStyle(
                       color: const Color(0xFF757575).withOpacity(0.62),
                       fontSize: 13,
                     ),
                   ),
                   Text(
                     ' · $priceRange · $category · $pickupTime',
-                    style: textTheme.bodySmall?.copyWith(
+                    style: TextStyle(
                       color: const Color(0xFF757575).withOpacity(0.62),
                       fontSize: 13,
                     ),
@@ -103,8 +118,8 @@ class StoreCard extends StatelessWidget {
                 ],
               ),
             ),
-            
-            // Store image
+
+            // 하단: 썸네일
             Padding(
               padding: const EdgeInsets.all(16),
               child: Container(
@@ -114,91 +129,65 @@ class StoreCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16),
                   color: Colors.grey[200],
                 ),
-                child: imageUrl != null && imageUrl!.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(16),
-                        child: Image.network(
-                          imageUrl!,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                          height: 144,
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) {
-                              return child;
-                            }
-                            return Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                color: Colors.grey[100],
-                              ),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                      : null,
-                                  strokeWidth: 2,
-                                  color: const Color(0xFFC6007E),
-                                ),
-                              ),
-                            );
-                          },
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                color: Colors.grey[100],
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.store,
-                                    size: 48,
-                                    color: Colors.grey[400],
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Text(
-                                    '이미지를 불러올 수 없습니다',
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      )
-                    : Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          color: Colors.grey[100],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.store,
-                              size: 48,
-                              color: Colors.grey[400],
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '이미지 없음',
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                child: _buildImage(),
               ),
             ),
           ],
         ),
+      ),
+    );
+
+    // 카드 크기 고정 옵션이 있으면 SizedBox로 감싸기
+    if (cardWidth != null || cardHeight != null) {
+      return SizedBox(width: cardWidth, height: cardHeight, child: cardChild);
+    }
+    return cardChild;
+  }
+
+  Widget _buildImage() {
+    if (imageUrl != null && imageUrl!.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Image.network(
+          imageUrl!,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              alignment: Alignment.center,
+              child: const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) => _fallbackImage(),
+        ),
+      );
+    }
+    return _fallbackImage();
+  }
+
+  Widget _fallbackImage() {
+    return Container(
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        color: Colors.grey[100],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.store, size: 48, color: Colors.grey[400]),
+          const SizedBox(height: 8),
+          Text(
+            '이미지를 불러올 수 없습니다',
+            style: TextStyle(color: Colors.grey[600], fontSize: 12),
+          ),
+        ],
       ),
     );
   }
