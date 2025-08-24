@@ -1,8 +1,10 @@
+// lib/screens/home_screen.dart
 import 'package:flutter/material.dart';
 
 import 'detail_screen.dart';
 import 'reservation_screen.dart';
 
+// widgets
 import '../widgets/store_card.dart';
 import '../widgets/category_icons.dart';
 import '../widgets/local_svg_icon.dart';
@@ -25,6 +27,46 @@ class _HomeScreenState extends State<HomeScreen> {
     fontWeight: FontWeight.w700,
     letterSpacing: -0.34,
   );
+
+  // 샘플 스토어 데이터 (상태를 여기서 관리)
+  final List<Map<String, dynamic>> _stores = [
+    {
+      'name': '청과원',
+      'category': '과일',
+      'rating': 4.2,
+      'priceRange': '₩29,700',
+      'pickupTime': '픽업시간: 6~7시',
+      'imageUrl':
+          'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop',
+    },
+    {
+      'name': '영원유과',
+      'category': '가공식품',
+      'rating': 4.8,
+      'priceRange': '₩29,700',
+      'pickupTime': '픽업시간: 6~7시',
+      'imageUrl':
+          'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=300&fit=crop',
+    },
+    {
+      'name': '김씨네 채소 가게',
+      'category': '채소',
+      'rating': 4.5,
+      'priceRange': '₩29,700',
+      'pickupTime': '픽업시간: 6~7시',
+      'imageUrl':
+          'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop',
+    },
+  ];
+
+  // 즐겨찾기 상태 (각 카드마다)
+  late List<bool> _favorites;
+
+  @override
+  void initState() {
+    super.initState();
+    _favorites = List<bool>.filled(_stores.length, false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             sliver: SliverList(
               delegate: SliverChildListDelegate(const [
-                SizedBox(height: 8), // ⬅️ 간격 20 -> 8로 축소
+                SizedBox(height: 8), // 검색창 위 간격 20 -> 8
                 _SearchField(),
                 SizedBox(height: 20),
                 _CategoryButtons(),
@@ -81,7 +123,15 @@ class _HomeScreenState extends State<HomeScreen> {
               ]),
             ),
           ),
-          _StoreListSliver(titleStyle: kStoreTitleStyle), // ⬅️ 스타일 전달
+          // 스토어 리스트
+          _StoreListSliver(
+            stores: _stores,
+            favorites: _favorites,
+            onToggleFavorite: (index) {
+              setState(() => _favorites[index] = !_favorites[index]);
+            },
+            titleStyle: kStoreTitleStyle,
+          ),
         ],
       ),
 
@@ -207,10 +257,9 @@ class _CategoryButtons extends StatelessWidget {
                   iconWidget,
                   const SizedBox(width: 4),
                 ],
-                const Text(
-                  '전체', // name 사용하려면 아래 줄로 대체
-                  // name,
-                  style: TextStyle(
+                Text(
+                  name,
+                  style: const TextStyle(
                     color: Color(0xFFFFFDFB),
                     fontSize: 15,
                     fontWeight: FontWeight.bold,
@@ -240,18 +289,18 @@ class _FilterHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: const [
-        Expanded(
+        Padding(
+          padding: EdgeInsets.only(left: 16), // ← 카드 시작점에 맞추기
           child: Text(
             '현재 위치에서 가까운 가게들을 만나보세요',
             style: TextStyle(
               color: Color(0xFF757575),
-              fontSize: 18,
+              fontSize: 17,
               fontWeight: FontWeight.w600,
               height: 1.4,
             ),
           ),
         ),
-        SizedBox(width: 12),
         Icon(Icons.tune, color: Color(0xFF757575), size: 24),
       ],
     );
@@ -259,41 +308,20 @@ class _FilterHeader extends StatelessWidget {
 }
 
 class _StoreListSliver extends StatelessWidget {
-  const _StoreListSliver({required this.titleStyle});
+  const _StoreListSliver({
+    required this.stores,
+    required this.favorites,
+    required this.onToggleFavorite,
+    required this.titleStyle,
+  });
+
+  final List<Map<String, dynamic>> stores;
+  final List<bool> favorites;
+  final ValueChanged<int> onToggleFavorite;
   final TextStyle titleStyle;
 
   @override
   Widget build(BuildContext context) {
-    final stores = [
-      {
-        'name': '청과원',
-        'category': '과일',
-        'rating': 4.2,
-        'priceRange': '₩29,700',
-        'pickupTime': '픽업시간: 6~7시',
-        'imageUrl':
-            'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop',
-      },
-      {
-        'name': '영원유과',
-        'category': '가공식품',
-        'rating': 4.8,
-        'priceRange': '₩29,700',
-        'pickupTime': '픽업시간: 6~7시',
-        'imageUrl':
-            'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=400&h=300&fit=crop',
-      },
-      {
-        'name': '김씨네 채소 가게',
-        'category': '채소',
-        'rating': 4.5,
-        'priceRange': '₩29,700',
-        'pickupTime': '픽업시간: 6~7시',
-        'imageUrl':
-            'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop',
-      },
-    ];
-
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       sliver: SliverList(
@@ -310,9 +338,10 @@ class _StoreListSliver extends StatelessWidget {
               priceRange: store['priceRange'] as String,
               pickupTime: store['pickupTime'] as String,
               imageUrl: store['imageUrl'] as String?,
-              // ⬇️ 제목 스타일 & 최대폭 전달 (줄바꿈/… 처리 목적)
               titleStyle: titleStyle,
               titleMaxWidth: 310,
+              isFavorite: favorites[index],
+              onFavoritePressed: () => onToggleFavorite(index),
               onTap: () {
                 Navigator.push(
                   context,
@@ -324,7 +353,6 @@ class _StoreListSliver extends StatelessWidget {
                   ),
                 );
               },
-              onFavoritePressed: () {},
             ),
           );
         }, childCount: stores.length),

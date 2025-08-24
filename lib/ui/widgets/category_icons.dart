@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'local_svg_icon.dart';
 
-// 로컬 SVG 서버를 사용한 카테고리 아이콘들
-
+/// 해산물 아이콘
 class SeafoodIcon extends StatelessWidget {
   final double size;
   final Color color;
@@ -15,14 +14,11 @@ class SeafoodIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LocalSvgIcon(
-      'seafood',
-      size: size,
-      color: color,
-    );
+    return LocalSvgIcon('seafood', size: size, color: color);
   }
 }
 
+/// 조리식품 아이콘
 class CookedIcon extends StatelessWidget {
   final double size;
   final Color color;
@@ -35,14 +31,11 @@ class CookedIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LocalSvgIcon(
-      'cooked',
-      size: size,
-      color: color,
-    );
+    return LocalSvgIcon('cooked', size: size, color: color);
   }
 }
 
+/// 채소·과일 아이콘
 class VegieIcon extends StatelessWidget {
   final double size;
   final Color color;
@@ -55,14 +48,11 @@ class VegieIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LocalSvgIcon(
-      'vegetable',
-      size: size,
-      color: color,
-    );
+    return LocalSvgIcon('vegetable', size: size, color: color);
   }
 }
 
+/// 장류·양념 아이콘
 class SeasoningIcon extends StatelessWidget {
   final double size;
   final Color color;
@@ -75,14 +65,11 @@ class SeasoningIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LocalSvgIcon(
-      'seasoning',
-      size: size,
-      color: color,
-    );
+    return LocalSvgIcon('seasoning', size: size, color: color);
   }
 }
 
+/// 한방 아이콘
 class HealthIcon extends StatelessWidget {
   final double size;
   final Color color;
@@ -95,10 +82,6 @@ class HealthIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LocalSvgIcon(
-      'health',
-      size: size,
-      color: color,
-    );
+    return LocalSvgIcon('health', size: size, color: color);
   }
 }
